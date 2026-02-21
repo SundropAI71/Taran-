@@ -1,3 +1,2 @@
 # Taran — Python dependencies
-# No external dependencies required for the core AI.
-# Add extras below as Taran's capabilities grow.
+google-generativeai>=0.8.6   # Gemini AI backend (Taran's brain)
