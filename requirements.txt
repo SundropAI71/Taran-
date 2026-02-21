@@ -1,0 +1,3 @@
+# Taran — Python dependencies
+# No external dependencies required for the core AI.
+# Add extras below as Taran's capabilities grow.
