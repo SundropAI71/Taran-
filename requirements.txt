@@ -1,2 +1,3 @@
 # Taran — Python dependencies
 google-generativeai>=0.8.6   # Gemini AI backend (Taran's brain)
+pyttsx3>=2.99                # Text-to-speech (Optimus voice profile)

@@ -4,6 +4,7 @@ Taran - Android Intelligence and Logic with Humor AI Droid
 
 import random
 import re
+import unicodedata
 from datetime import datetime
 
 
@@ -44,6 +45,21 @@ ABILITY_QUERIES = [
     r"\bwhat are your skills\b",
     r"\byour skills\b",
     r"\byour powers\b",
+]
+
+MUTE_COMMANDS = [
+    r"\bmute\b",
+    r"\bsilence\b",
+    r"\bvoice off\b",
+    r"\bstop (speaking|talking)\b",
+    r"\bshut up\b",
+]
+
+UNMUTE_COMMANDS = [
+    r"\bunmute\b",
+    r"\bvoice on\b",
+    r"\bspeak up\b",
+    r"\bturn on voice\b",
 ]
 
 # Structured catalogue of Taran's current abilities.
@@ -96,18 +112,118 @@ ABILITIES: list[dict] = [
         "description": "Displays a quick-reference help menu",
         "examples": ["help"],
     },
+    {
+        "emoji": "🔊",
+        "name": "Voice (Optimus profile)",
+        "description": "Speaks responses aloud in a deep, authoritative voice",
+        "examples": ["(automatic)", "mute", "unmute"],
+    },
 ]
+
+
+class VoiceEngine:
+    """Text-to-speech engine tuned to Taran's Optimus-inspired voice profile.
+
+    Voice profile:
+      - Rate  : 120 wpm — slow, deliberate, authoritative
+      - Volume: 1.0     — maximum
+      - Voice : deep British English (gmw/en) with American English fallback
+    Degrades silently when espeak-ng / a TTS backend is not installed.
+    """
+
+    RATE = 120      # words-per-minute
+    VOLUME = 1.0    # 0.0 – 1.0
+
+    # espeak-ng voice IDs tried in priority order (deepest/most authoritative first)
+    PREFERRED_VOICES = [
+        "gmw/en",           # English (Great Britain) — formal & authoritative
+        "gmw/en-gb-x-rp",   # English (Received Pronunciation)
+        "gmw/en-us",        # English (America)
+        "gmw/en-029",       # English (Caribbean English variant)
+    ]
+
+    def __init__(self) -> None:
+        self._engine = None
+        self._available = False
+        self._init_engine()
+
+    @property
+    def available(self) -> bool:
+        """True when the TTS backend is ready."""
+        return self._available
+
+    def speak(self, text: str) -> bool:
+        """Speak *text* aloud.  Returns True if audio was produced."""
+        if not self._available or not text:
+            return False
+        try:
+            clean = self._clean_for_speech(text)
+            if not clean:
+                return False
+            self._engine.say(clean)
+            self._engine.runAndWait()
+            return True
+        except Exception:
+            return False
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _init_engine(self) -> None:
+        try:
+            import pyttsx3
+            engine = pyttsx3.init()
+            engine.setProperty("rate", self.RATE)
+            engine.setProperty("volume", self.VOLUME)
+            self._select_voice(engine)
+            self._engine = engine
+            self._available = True
+        except Exception:
+            self._available = False
+
+    def _select_voice(self, engine) -> None:
+        """Set the deepest available English voice."""
+        voices = engine.getProperty("voices")
+        if not voices:
+            return
+        voice_map = {v.id: v for v in voices}
+        for vid in self.PREFERRED_VOICES:
+            if vid in voice_map:
+                engine.setProperty("voice", vid)
+                return
+        # Last resort: any voice whose ID contains "en"
+        for voice in voices:
+            if "en" in voice.id.lower():
+                engine.setProperty("voice", voice.id)
+                return
+
+    @staticmethod
+    def _clean_for_speech(text: str) -> str:
+        """Strip emoji, markdown, and other non-speech characters."""
+        # Remove emoji (Unicode 'Other Symbol') and surrogates
+        cleaned = "".join(
+            c for c in text
+            if unicodedata.category(c) not in ("So", "Cs", "Cn")
+        )
+        # Remove common markdown decoration
+        cleaned = re.sub(r"[*_`#•]", "", cleaned)
+        # Collapse whitespace
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        return cleaned
 
 
 class Taran:
     """Taran: Android Intelligence and Logic with Humor AI Droid."""
 
     NAME = "Taran"
-    VERSION = "0.1.0"
+    VERSION = "0.2.0"
 
-    def __init__(self):
+    def __init__(self, voice_enabled: bool = True) -> None:
         self._conversation_history: list[dict] = []
         self._start_time = datetime.now()
+        self._voice: VoiceEngine | None = VoiceEngine() if voice_enabled else None
+        self._voice_muted: bool = False
 
     # ------------------------------------------------------------------
     # Public interface
@@ -128,6 +244,22 @@ class Taran:
         )
         return response
 
+    def speak(self, text: str) -> bool:
+        """Speak *text* aloud using the Optimus voice profile.
+
+        Returns True if audio was produced, False if voice is muted,
+        unavailable, or an error occurred.
+        """
+        if self._voice_muted or self._voice is None:
+            return False
+        return self._voice.speak(text)
+
+    def respond_and_speak(self, user_input: str) -> str:
+        """Respond to *user_input*, speak the response, and return the text."""
+        response = self.respond(user_input)
+        self.speak(response)
+        return response
+
     def introduce(self) -> str:
         """Return Taran's self-introduction."""
         uptime = datetime.now() - self._start_time
@@ -136,6 +268,15 @@ class Taran:
             f"and Logic with Humor AI Droid. 🤖\n"
             f"I've been online for {int(uptime.total_seconds())} second(s). "
             f"Ask me anything, tell me a joke, or just say hi!"
+        )
+
+    @property
+    def voice_enabled(self) -> bool:
+        """True when the voice engine is available and not muted."""
+        return (
+            self._voice is not None
+            and self._voice.available
+            and not self._voice_muted
         )
 
     @property
@@ -167,6 +308,14 @@ class Taran:
 
         if self._matches_any(lower, ABILITY_QUERIES):
             return self._abilities_response()
+
+        if self._matches_any(lower, MUTE_COMMANDS):
+            self._voice_muted = True
+            return "Voice muted. I'll be the strong, silent type. 🔇"
+
+        if self._matches_any(lower, UNMUTE_COMMANDS):
+            self._voice_muted = False
+            return "Voice back online. Roll out! 🔊"
 
         if "joke" in lower or "funny" in lower or "humor" in lower:
             return self._joke_response()
@@ -224,6 +373,7 @@ class Taran:
             "  • Tell the time  (ask 'what time is it?')\n"
             "  • Solve simple math  (e.g. '2 + 2')\n"
             "  • Introduce myself   (ask 'who are you?')\n"
+            "  • Say it aloud       (voice on / mute)\n"
             "  • Much more coming soon! 🚀"
         )
 
@@ -286,3 +436,4 @@ class Taran:
             f"Noted: \"{text}\". I'm still learning — thanks for chatting with me!",
         ]
         return random.choice(responses)
+

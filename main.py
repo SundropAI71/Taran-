@@ -9,9 +9,15 @@ from taran import Taran
 
 
 def main() -> None:
-    taran = Taran()
+    taran = Taran(voice_enabled=True)
     print(taran.introduce())
-    print("\nType 'quit' or 'exit' to stop.\n")
+
+    if taran.voice_enabled:
+        print("🔊 Optimus voice profile active — Taran will speak his responses.")
+    else:
+        print("🔇 Voice unavailable (espeak-ng not installed?). Text-only mode.")
+
+    print("\nType 'quit' or 'exit' to stop.  Say 'mute' / 'unmute' to toggle voice.\n")
 
     while True:
         try:
@@ -27,7 +33,7 @@ def main() -> None:
         if not user_input:
             continue
 
-        response = taran.respond(user_input)
+        response = taran.respond_and_speak(user_input)
         print(f"Taran: {response}\n")
 
 
