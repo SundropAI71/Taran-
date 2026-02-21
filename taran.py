@@ -34,6 +34,70 @@ FAREWELLS = [
     r"\bfarewell\b",
 ]
 
+ABILITY_QUERIES = [
+    r"\babilities\b",
+    r"\bability\b",
+    r"\bcapabilit(y|ies)\b",
+    r"\bwhat can you do\b",
+    r"\bwhat do you do\b",
+    r"\bwhat are you capable\b",
+    r"\bwhat are your skills\b",
+    r"\byour skills\b",
+    r"\byour powers\b",
+]
+
+# Structured catalogue of Taran's current abilities.
+ABILITIES: list[dict] = [
+    {
+        "emoji": "👋",
+        "name": "Greetings & farewells",
+        "description": "Responds warmly to hellos and goodbyes",
+        "examples": ["hello", "hey", "bye", "farewell"],
+    },
+    {
+        "emoji": "😂",
+        "name": "Humor / jokes",
+        "description": "Delivers a rotating set of original robot-themed jokes",
+        "examples": ["tell me a joke", "say something funny"],
+    },
+    {
+        "emoji": "⏰",
+        "name": "Date & time",
+        "description": "Reports the current date and time",
+        "examples": ["what time is it?", "what's today's date?"],
+    },
+    {
+        "emoji": "🔢",
+        "name": "Arithmetic",
+        "description": "Safely evaluates basic math expressions (+, -, *, /, **)",
+        "examples": ["6 * 7", "2 + 2", "(10 - 3) * 4"],
+    },
+    {
+        "emoji": "ℹ️",
+        "name": "Self-introduction",
+        "description": "Introduces himself and reports uptime",
+        "examples": ["who are you?", "what are you?"],
+    },
+    {
+        "emoji": "🔖",
+        "name": "Version info",
+        "description": "Reports the current software version",
+        "examples": ["what version are you?"],
+    },
+    {
+        "emoji": "📋",
+        "name": "Abilities listing",
+        "description": "Lists all current abilities — you're reading it now!",
+        "examples": ["what can you do?", "list your abilities"],
+    },
+    {
+        "emoji": "❓",
+        "name": "Help",
+        "description": "Displays a quick-reference help menu",
+        "examples": ["help"],
+    },
+]
+
 
 class Taran:
     """Taran: Android Intelligence and Logic with Humor AI Droid."""
@@ -83,6 +147,11 @@ class Taran:
         """Clear all conversation history."""
         self._conversation_history.clear()
 
+    def abilities(self) -> list[dict]:
+        """Return a deep copy of the structured abilities catalogue."""
+        import copy
+        return copy.deepcopy(ABILITIES)
+
     # ------------------------------------------------------------------
     # Internal logic
     # ------------------------------------------------------------------
@@ -95,6 +164,9 @@ class Taran:
 
         if self._matches_any(lower, FAREWELLS):
             return "Goodbye! Remember: every reboot is a fresh start. 👋"
+
+        if self._matches_any(lower, ABILITY_QUERIES):
+            return self._abilities_response()
 
         if "joke" in lower or "funny" in lower or "humor" in lower:
             return self._joke_response()
@@ -154,6 +226,19 @@ class Taran:
             "  • Introduce myself   (ask 'who are you?')\n"
             "  • Much more coming soon! 🚀"
         )
+
+    @staticmethod
+    def _abilities_response() -> str:
+        lines = [f"Here are my current abilities ({len(ABILITIES)} total):\n"]
+        for ability in ABILITIES:
+            examples = ", ".join(f'"{e}"' for e in ability["examples"])
+            lines.append(
+                f"  {ability['emoji']} {ability['name']}\n"
+                f"     {ability['description']}\n"
+                f"     Try: {examples}"
+            )
+        lines.append("\nMore abilities are on the way! 🚀")
+        return "\n".join(lines)
 
     @staticmethod
     def _is_math_expression(text: str) -> bool:

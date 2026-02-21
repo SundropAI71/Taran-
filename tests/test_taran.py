@@ -79,6 +79,46 @@ class TestHelp:
         assert len(response) > 0
 
 
+class TestAbilities:
+    @pytest.mark.parametrize("query", [
+        "what are your abilities?",
+        "what can you do?",
+        "list your abilities",
+        "what are your capabilities?",
+        "what are your skills?",
+        "what are you capable of?",
+    ])
+    def test_ability_query_triggers_response(self, taran, query):
+        response = taran.respond(query)
+        # Every ability name must appear in the response
+        for ability in taran.abilities():
+            assert ability["name"] in response, (
+                f"Expected '{ability['name']}' in abilities response, got: {response[:80]}"
+            )
+
+    def test_abilities_method_returns_list(self, taran):
+        result = taran.abilities()
+        assert isinstance(result, list)
+        assert len(result) > 0
+
+    def test_abilities_entries_have_required_keys(self, taran):
+        for ability in taran.abilities():
+            assert "emoji" in ability
+            assert "name" in ability
+            assert "description" in ability
+            assert "examples" in ability
+
+    def test_abilities_method_returns_copy(self, taran):
+        first = taran.abilities()
+        first.clear()
+        assert len(taran.abilities()) > 0
+
+    def test_abilities_response_lists_all_abilities(self, taran):
+        response = taran.respond("what are your abilities?")
+        for ability in taran.abilities():
+            assert ability["name"] in response
+
+
 class TestIdentity:
     def test_who_are_you(self, taran):
         response = taran.respond("who are you?")
