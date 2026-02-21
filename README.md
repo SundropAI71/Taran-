@@ -8,15 +8,32 @@ Taran is a conversational AI droid built in Python. He can chat, tell jokes, ans
 
 ## How to Access Taran
 
-### Option A — On your computer (fastest)
+### ⭐ Option A — Free public URL via GitHub Codespaces (Microsoft / Copilot)
+
+**No Python, no install — just a browser. Works from anywhere, including Android.**
+
+1. Click **`<> Code`** → **`Codespaces`** → **`Create codespace on main`** on this GitHub page
+2. Wait ~60 seconds while the container starts and installs everything automatically
+3. Taran starts and a **public HTTPS URL** appears — something like:
+   ```
+   https://your-codespace-name-5000.preview.app.github.dev
+   ```
+4. Share that URL with anyone — it works on any phone, tablet, or browser worldwide 🌐
+
+> **Free quota**: GitHub provides free Codespaces usage within monthly quota limits — see [github.com/features/codespaces](https://github.com/features/codespaces) for current details.
+> The URL is public so friends can chat with Taran while your Codespace is running.
+
+---
+
+### Option B — On your computer
 
 ```
-1. pip install -r requirements.txt
+1. pip install -r requirements-local.txt
 2. python app.py
 3. Open  →  http://localhost:5000
 ```
 
-### Option B — On Android / any phone (same Wi-Fi)
+### Option C — On Android / any phone (same Wi-Fi)
 
 ```
 1. Run  python app.py  on your computer
@@ -28,9 +45,9 @@ Taran is a conversational AI droid built in Python. He can chat, tell jokes, ans
 4. Click 📱 in the app header any time to see the URL + QR again
 ```
 
-### Option C — From anywhere in the world (cloud deploy)
+### Option D — Permanent public URL (cloud deploy)
 
-Deploy Taran to [Render.com](https://render.com) for free in one click — no credit card needed:
+Deploy Taran to [Render.com](https://render.com) for free — no credit card needed:
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SundropAI71/Taran-)
 
@@ -69,7 +86,7 @@ Taran runs as a **web app** — launch it and open it in any browser, including 
 
 ---
 
-## Getting Started (full setup)
+## Getting Started (local setup)
 
 ### Requirements
 - Python 3.9+
@@ -78,8 +95,14 @@ Taran runs as a **web app** — launch it and open it in any browser, including 
   - **macOS**: built-in `say` command (pyttsx3 uses it automatically)
   - **Windows**: built-in SAPI5 voices (pyttsx3 uses them automatically)
 
-### Install Python dependencies
+### Install dependencies
 
+For local development **with voice**:
+```bash
+pip install -r requirements-local.txt
+```
+
+For cloud / server installs (no voice):
 ```bash
 pip install -r requirements.txt
 ```
@@ -157,18 +180,21 @@ python -m pytest tests/ -v
 
 ```
 Taran-/
-├── app.py            # Flask web app (chat UI + REST API)
-├── taran.py          # Core Taran AI class + VoiceEngine
-├── main.py           # Interactive CLI entry point
-├── Procfile          # Cloud deploy start command (Railway / Heroku / Render)
-├── render.yaml       # Zero-config Render.com deployment
-├── runtime.txt       # Python version pin for cloud platforms
-├── requirements.txt  # Python dependencies
+├── .devcontainer/
+│   └── devcontainer.json # GitHub Codespaces config (free public URL!)
+├── app.py                # Flask web app (chat UI + REST API)
+├── taran.py              # Core Taran AI class + VoiceEngine
+├── main.py               # Interactive CLI entry point
+├── Procfile              # Cloud deploy start command (Railway / Heroku / Render)
+├── render.yaml           # Zero-config Render.com deployment
+├── runtime.txt           # Python version pin for cloud platforms
+├── requirements.txt      # Core dependencies (cloud-safe)
+├── requirements-local.txt# Full local dependencies (includes voice/pyttsx3)
 ├── templates/
-│   └── index.html    # Chat UI (dark theme, mobile-friendly, QR access panel)
+│   └── index.html        # Chat UI (dark theme, mobile-friendly, QR access panel)
 └── tests/
-    ├── test_taran.py # Core AI unit tests (71 tests)
-    └── test_app.py   # Flask route tests (38 tests)
+    ├── test_taran.py     # Core AI unit tests (71 tests)
+    └── test_app.py       # Flask route tests (38 tests)
 ```
 
 ---

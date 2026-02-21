@@ -1,0 +1,8 @@
+# Taran — full local development dependencies (includes voice / TTS)
+# Usage:  pip install -r requirements-local.txt
+#
+# NOTE: pyttsx3 requires espeak-ng on Linux:
+#   sudo apt-get install espeak-ng
+#
+-r requirements.txt
+pyttsx3>=2.99                # Text-to-speech (Optimus voice profile — local only)
