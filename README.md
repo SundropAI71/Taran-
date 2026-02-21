@@ -6,6 +6,14 @@ Taran is a conversational AI droid built in Python. He can chat, tell jokes, ans
 
 ---
 
+## App
+
+Taran runs as a **web app** — launch it and open it in any browser, including on Android/mobile.
+
+![Taran App](https://github.com/user-attachments/assets/e2c7ad22-45a8-4ef4-bedb-56ce3cb55e9e)
+
+---
+
 ## Features
 
 | Capability | Example input |
@@ -37,39 +45,45 @@ Taran is a conversational AI droid built in Python. He can chat, tell jokes, ans
 pip install -r requirements.txt
 ```
 
-### Run Taran
+### Run as an App 🚀
+
+```bash
+python app.py
+```
+
+Then open **http://localhost:5000** in your browser.
+
+On Android or any device on the same network, open **http://\<your-local-ip\>:5000**.
+
+### Or run in the terminal (CLI)
 
 ```bash
 python main.py
 ```
 
-### Example session
+---
 
-```
-Hello! I'm Taran v0.2.0 — your Android Intelligence and Logic with Humor AI Droid. 🤖
-I've been online for 0 second(s). Ask me anything, tell me a joke, or just say hi!
-🔊 Optimus voice profile active — Taran will speak his responses.
+## App UI
 
-Type 'quit' or 'exit' to stop.  Say 'mute' / 'unmute' to toggle voice.
+The web app provides a full chat interface:
 
-You: hello
-Taran: Good morning! I'm Taran. How can I help you today? 😊
+- 💬 **Message bubbles** — user messages on the right, Taran on the left
+- 📋 **Abilities button** — lists all of Taran's current skills
+- 🗑️ **Clear button** — wipe the conversation history
+- ⌨️ **Enter to send** · **Shift+Enter** for multi-line messages
+- 🔄 **Typing indicator** — animated dots while Taran is thinking
 
-You: tell me a joke
-Taran: Why did the robot cross the road? Because it was programmed to! 🤖
+### REST API
 
-You: 6 * 7
-Taran: The answer is 42. Math is my second language! 🔢
+The app also exposes a simple API for integrations:
 
-You: mute
-Taran: Voice muted. I'll be the strong, silent type. 🔇
-
-You: unmute
-Taran: Voice back online. Roll out! 🔊
-
-You: bye
-Taran: Goodbye! See you next boot cycle. 🤖
-```
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Chat page |
+| `POST` | `/chat` | Send `{"message": "..."}`, get `{"response": "..."}` |
+| `GET` | `/history` | Full conversation history |
+| `POST` | `/clear` | Clear conversation history |
+| `GET` | `/abilities` | Taran's abilities catalogue |
 
 ---
 
@@ -83,7 +97,7 @@ Taran's voice is tuned to sound deep and authoritative:
 | Rate | 120 wpm | Slow and deliberate |
 | Volume | 1.0 | Maximum |
 
-**Voice commands**
+**Voice commands** (type in the chat):
 
 | Say | Effect |
 |---|---|
@@ -104,11 +118,15 @@ python -m pytest tests/ -v
 
 ```
 Taran-/
+├── app.py            # Flask web app (chat UI + REST API)
 ├── taran.py          # Core Taran AI class + VoiceEngine
 ├── main.py           # Interactive CLI entry point
 ├── requirements.txt  # Python dependencies
+├── templates/
+│   └── index.html    # Chat UI (dark theme, mobile-friendly)
 └── tests/
-    └── test_taran.py # Unit tests (71 tests)
+    ├── test_taran.py # Core AI unit tests (71 tests)
+    └── test_app.py   # Flask route tests (23 tests)
 ```
 
 ---
@@ -118,5 +136,5 @@ Taran-/
 - [ ] Google Gemini AI integration (full LLM brain)
 - [ ] Persistent memory across sessions
 - [ ] Plugin system for new skills
-- [ ] Android app integration
+- [ ] Android native app
 - [ ] Expanded knowledge base
