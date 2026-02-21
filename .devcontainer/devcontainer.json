@@ -1,0 +1,36 @@
+{
+  "name": "Taran AI Droid",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+
+  // Install core dependencies (cloud-safe, no pyttsx3/audio hardware needed)
+  "postCreateCommand": "pip install -r requirements.txt",
+
+  // Start Taran with gunicorn (matches production) every time the Codespace (re)starts
+  "postStartCommand": "gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --daemon --log-file /tmp/taran.log && echo '🤖 Taran is running on port 5000'",
+
+  // Forward port 5000 and make it publicly accessible on the internet
+  "forwardPorts": [5000],
+  "portsAttributes": {
+    "5000": {
+      "label": "Taran Web App 🤖",
+      "onAutoForward": "openPreview",
+      "visibility": "public"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    },
+    "codespaces": {
+      "openFiles": ["README.md"]
+    }
+  }
+}

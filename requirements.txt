@@ -1,0 +1,5 @@
+# Taran — core dependencies (cloud-safe: Render, Railway, Heroku, Codespaces)
+flask>=3.1.0                 # Web app framework (Taran chat UI)
+gunicorn>=25.1.0             # Production WSGI server
+google-generativeai>=0.8.6   # Gemini AI backend (Taran's brain)
+qrcode>=8.2                  # QR code for easy mobile/Android access
