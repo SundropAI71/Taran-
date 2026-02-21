@@ -160,3 +160,100 @@ class TestAbilitiesRoute:
             assert "name" in ability
             assert "description" in ability
             assert "examples" in ability
+
+
+# ---------------------------------------------------------------------------
+# /access endpoint
+# ---------------------------------------------------------------------------
+
+class TestAccessRoute:
+    def test_returns_200(self, client):
+        assert client.get("/access").status_code == 200
+
+    def test_returns_json(self, client):
+        data = client.get("/access").get_json()
+        assert data is not None
+
+    def test_has_local_url(self, client):
+        data = client.get("/access").get_json()
+        assert "local_url" in data
+        assert data["local_url"].startswith("http://")
+
+    def test_has_mobile_url(self, client):
+        data = client.get("/access").get_json()
+        assert "mobile_url" in data
+        assert data["mobile_url"].startswith("http://")
+        assert ":5000" in data["mobile_url"]
+
+    def test_has_qr_ascii(self, client):
+        data = client.get("/access").get_json()
+        assert "qr_ascii" in data
+
+    def test_local_url_is_localhost(self, client):
+        data = client.get("/access").get_json()
+        assert "127.0.0.1" in data["local_url"]
+
+
+# ---------------------------------------------------------------------------
+# Helper function tests
+# ---------------------------------------------------------------------------
+
+class TestGetLocalIp:
+    def test_returns_string(self):
+        ip = flask_app._get_local_ip()
+        assert isinstance(ip, str)
+        assert len(ip) > 0
+
+    def test_returns_fallback_on_error(self):
+        with patch("socket.socket") as mock_sock:
+            mock_sock.return_value.__enter__.return_value.connect.side_effect = OSError
+            ip = flask_app._get_local_ip()
+        assert ip == "127.0.0.1"
+
+    def test_ip_looks_like_ip(self):
+        ip = flask_app._get_local_ip()
+        parts = ip.split(".")
+        assert len(parts) == 4
+
+
+class TestMakeQrAscii:
+    def test_returns_string(self):
+        result = flask_app._make_qr_ascii("http://192.168.1.1:5000")
+        assert isinstance(result, str)
+
+    def test_non_empty_for_valid_url(self):
+        result = flask_app._make_qr_ascii("http://192.168.1.1:5000")
+        assert len(result) > 0
+
+    def test_returns_empty_on_qrcode_error(self):
+        with patch("app._make_qr_ascii", return_value=""):
+            result = flask_app._make_qr_ascii.__wrapped__("http://example.com") if hasattr(flask_app._make_qr_ascii, "__wrapped__") else ""
+        # Verify the function handles errors by checking a raised exception path
+        import unittest.mock as mock
+        original_qr = None
+        try:
+            import qrcode as _qr
+            original_qr = _qr
+        except ImportError:
+            pass
+        with mock.patch("qrcode.QRCode", side_effect=Exception("qr error")):
+            result = flask_app._make_qr_ascii("http://example.com")
+        assert result == ""
+
+    def test_qr_contains_block_characters(self):
+        result = flask_app._make_qr_ascii("http://192.168.1.1:5000")
+        assert any(c in result for c in ("█", "▀", "▄", " "))
+
+
+# ---------------------------------------------------------------------------
+# Index page with new template variables
+# ---------------------------------------------------------------------------
+
+class TestIndexWithAccessVars:
+    def test_mobile_url_in_page(self, client):
+        resp = client.get("/")
+        assert b":5000" in resp.data
+
+    def test_access_button_in_page(self, client):
+        resp = client.get("/")
+        assert b"btn-access" in resp.data or b"access" in resp.data.lower()

@@ -93,6 +93,47 @@
     .btn-icon.active { border-color: var(--accent2); color: var(--accent2); }
 
     /* ------------------------------------------------------------------ */
+    /* Access panel (mobile / QR)                                           */
+    /* ------------------------------------------------------------------ */
+    .access-panel {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: none;
+      gap: 20px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .access-panel.open { display: flex; }
+
+    .access-info { flex: 1; }
+    .access-info h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; }
+    .access-url {
+      font-family: monospace;
+      font-size: 0.88rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--accent2);
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+    .access-note { font-size: 0.75rem; color: var(--subtext); }
+
+    .qr-block {
+      font-family: monospace;
+      font-size: 0.38rem;
+      line-height: 1.1;
+      white-space: pre;
+      background: #fff;
+      color: #000;
+      padding: 4px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* ------------------------------------------------------------------ */
     /* Chat window                                                          */
     /* ------------------------------------------------------------------ */
     .chat-window {
@@ -237,10 +278,23 @@
       <p>Android Intelligence · Logic · Humor · v{{ version }}</p>
     </div>
     <div class="header-actions">
+      <button class="btn-icon" id="btn-access"    title="Access on mobile">📱</button>
       <button class="btn-icon" id="btn-abilities" title="Show abilities">📋</button>
       <button class="btn-icon" id="btn-clear"    title="Clear chat">🗑️</button>
     </div>
   </header>
+
+  <!-- Mobile access panel -->
+  <div class="access-panel" id="access-panel">
+    <div class="access-info">
+      <h3>📱 Access on Android / any device</h3>
+      <div class="access-url" id="access-url">{{ mobile_url }}</div>
+      <div class="access-note">Make sure your phone is on the same Wi-Fi network, then open the URL above or scan the QR code →</div>
+    </div>
+    {% if qr_ascii %}
+    <div class="qr-block" id="qr-block">{{ qr_ascii }}</div>
+    {% endif %}
+  </div>
 
   <!-- Chat window -->
   <div class="chat-window" id="chat-window">
@@ -265,8 +319,10 @@
   const inputEl     = document.getElementById("user-input");
   const sendBtn     = document.getElementById("btn-send");
   const statusBar   = document.getElementById("status-bar");
+  const btnAccess   = document.getElementById("btn-access");
   const btnAbil     = document.getElementById("btn-abilities");
   const btnClear    = document.getElementById("btn-clear");
+  const accessPanel = document.getElementById("access-panel");
 
   const STATUS_IDLE = "Press Enter to send · Shift+Enter for new line";
 
@@ -403,6 +459,13 @@
   sendBtn.addEventListener("click", sendMessage);
   btnAbil.addEventListener("click", showAbilities);
   btnClear.addEventListener("click", clearChat);
+
+  if (btnAccess && accessPanel) {
+    btnAccess.addEventListener("click", () => {
+      const open = accessPanel.classList.toggle("open");
+      btnAccess.classList.toggle("active", open);
+    });
+  }
 
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {

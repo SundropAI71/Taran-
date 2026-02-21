@@ -6,6 +6,45 @@ Taran is a conversational AI droid built in Python. He can chat, tell jokes, ans
 
 ---
 
+## How to Access Taran
+
+### Option A — On your computer (fastest)
+
+```
+1. pip install -r requirements.txt
+2. python app.py
+3. Open  →  http://localhost:5000
+```
+
+### Option B — On Android / any phone (same Wi-Fi)
+
+```
+1. Run  python app.py  on your computer
+2. Look for the URL printed in the terminal, e.g.:
+       📱  http://192.168.1.42:5000
+3. Type that URL into your phone's browser
+   — OR —
+   Scan the QR code that appears in the terminal 📷
+4. Click 📱 in the app header any time to see the URL + QR again
+```
+
+### Option C — From anywhere in the world (cloud deploy)
+
+Deploy Taran to [Render.com](https://render.com) for free in one click — no credit card needed:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SundropAI71/Taran-)
+
+**Or manually:**
+
+1. Fork this repo on GitHub
+2. Go to [render.com](https://render.com) → **New Web Service**
+3. Connect your fork — Render auto-detects `render.yaml`
+4. Click **Deploy** — Taran is live at `https://taran-xxxx.onrender.com` 🌐
+
+> Railway and Heroku are also supported via the included `Procfile`.
+
+---
+
 ## App
 
 Taran runs as a **web app** — launch it and open it in any browser, including on Android/mobile.
@@ -30,7 +69,7 @@ Taran runs as a **web app** — launch it and open it in any browser, including 
 
 ---
 
-## Getting Started
+## Getting Started (full setup)
 
 ### Requirements
 - Python 3.9+
@@ -51,9 +90,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Then open **http://localhost:5000** in your browser.
-
-On Android or any device on the same network, open **http://\<your-local-ip\>:5000**.
+The terminal prints your **exact URLs** (desktop + mobile) and a **scannable QR code** automatically.
 
 ### Or run in the terminal (CLI)
 
@@ -68,6 +105,7 @@ python main.py
 The web app provides a full chat interface:
 
 - 💬 **Message bubbles** — user messages on the right, Taran on the left
+- 📱 **Access button** — shows your mobile URL and QR code at any time
 - 📋 **Abilities button** — lists all of Taran's current skills
 - 🗑️ **Clear button** — wipe the conversation history
 - ⌨️ **Enter to send** · **Shift+Enter** for multi-line messages
@@ -84,6 +122,7 @@ The app also exposes a simple API for integrations:
 | `GET` | `/history` | Full conversation history |
 | `POST` | `/clear` | Clear conversation history |
 | `GET` | `/abilities` | Taran's abilities catalogue |
+| `GET` | `/access` | Returns `local_url`, `mobile_url`, and `qr_ascii` |
 
 ---
 
@@ -121,12 +160,15 @@ Taran-/
 ├── app.py            # Flask web app (chat UI + REST API)
 ├── taran.py          # Core Taran AI class + VoiceEngine
 ├── main.py           # Interactive CLI entry point
+├── Procfile          # Cloud deploy start command (Railway / Heroku / Render)
+├── render.yaml       # Zero-config Render.com deployment
+├── runtime.txt       # Python version pin for cloud platforms
 ├── requirements.txt  # Python dependencies
 ├── templates/
-│   └── index.html    # Chat UI (dark theme, mobile-friendly)
+│   └── index.html    # Chat UI (dark theme, mobile-friendly, QR access panel)
 └── tests/
     ├── test_taran.py # Core AI unit tests (71 tests)
-    └── test_app.py   # Flask route tests (23 tests)
+    └── test_app.py   # Flask route tests (38 tests)
 ```
 
 ---

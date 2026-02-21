@@ -148,17 +148,21 @@ if __name__ == "__main__":
     mobile_url = f"http://{local_ip}:5000"
 
     print(f"\n🤖  Taran v{Taran.VERSION} is online!\n")
-    print("┌─────────────────────────────────────────────┐")
-    print("│  HOW TO ACCESS TARAN                        │")
-    print("│                                             │")
-    print("│  💻  On this computer:                      │")
-    print("│      http://localhost:5000                  │")
-    print("│                                             │")
-    print(f"│  📱  On Android / phone (same Wi-Fi):       │")
-    print(f"│      {mobile_url:<43}│")
-    print("│                                             │")
-    print("│  📷  Scan the QR code below on your phone:  │")
-    print("└─────────────────────────────────────────────┘\n")
+    _BOX_WIDTH = 45
+    _inner = _BOX_WIDTH - 2  # width inside the border characters
+    mobile_label = f"      {mobile_url}"
+
+    print("┌" + "─" * _inner + "┐")
+    print("│" + "  HOW TO ACCESS TARAN".ljust(_inner) + "│")
+    print("│" + " " * _inner + "│")
+    print("│" + "  💻  On this computer:".ljust(_inner) + "│")
+    print("│" + "      http://localhost:5000".ljust(_inner) + "│")
+    print("│" + " " * _inner + "│")
+    print("│" + "  📱  On Android / phone (same Wi-Fi):".ljust(_inner) + "│")
+    print("│" + mobile_label.ljust(_inner) + "│")
+    print("│" + " " * _inner + "│")
+    print("│" + "  📷  Scan the QR code below on your phone:".ljust(_inner) + "│")
+    print("└" + "─" * _inner + "┘\n")
 
     qr_ascii = _make_qr_ascii(mobile_url)
     if qr_ascii:
