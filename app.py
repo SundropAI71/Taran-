@@ -8,7 +8,9 @@ Then open http://localhost:5000 in your browser (or on any device on the
 same network at http://<your-ip>:5000).
 """
 
+import io
 import os
+import socket
 
 from flask import Flask, jsonify, render_template, request, session
 
@@ -32,6 +34,31 @@ def _get_taran() -> Taran:
     return _taran
 
 
+def _get_local_ip() -> str:
+    """Return the machine's LAN IP address, or '127.0.0.1' as fallback."""
+    try:
+        # Connect to an external address (no data sent) to find the outbound interface.
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+
+
+def _make_qr_ascii(url: str) -> str:
+    """Return an ASCII QR code string for *url*."""
+    try:
+        import qrcode
+        qr = qrcode.QRCode(border=1)
+        qr.add_data(url)
+        qr.make(fit=True)
+        buf = io.StringIO()
+        qr.print_ascii(out=buf, invert=True)
+        return buf.getvalue()
+    except Exception:
+        return ""
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -41,7 +68,16 @@ def index():
     """Serve the main chat page."""
     taran = _get_taran()
     intro = taran.introduce()
-    return render_template("index.html", intro=intro, version=Taran.VERSION)
+    local_ip = _get_local_ip()
+    mobile_url = f"http://{local_ip}:5000"
+    qr_ascii = _make_qr_ascii(mobile_url)
+    return render_template(
+        "index.html",
+        intro=intro,
+        version=Taran.VERSION,
+        mobile_url=mobile_url,
+        qr_ascii=qr_ascii,
+    )
 
 
 @app.route("/chat", methods=["POST"])
@@ -83,14 +119,51 @@ def abilities():
     return jsonify({"abilities": taran.abilities()})
 
 
+@app.route("/access", methods=["GET"])
+def access():
+    """Return access URLs and a QR code for mobile/Android.
+
+    Response (JSON):
+        {
+            "local_url":  "http://127.0.0.1:5000",
+            "mobile_url": "http://192.168.x.x:5000",
+            "qr_ascii":   "... ASCII QR code ..."
+        }
+    """
+    local_ip = _get_local_ip()
+    mobile_url = f"http://{local_ip}:5000"
+    return jsonify({
+        "local_url": "http://127.0.0.1:5000",
+        "mobile_url": mobile_url,
+        "qr_ascii": _make_qr_ascii(mobile_url),
+    })
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print(f"🤖 Taran v{Taran.VERSION} — starting web app…")
-    print("   Open http://localhost:5000 in your browser.")
-    print("   On mobile / Android: http://<your-local-ip>:5000")
+    local_ip = _get_local_ip()
+    mobile_url = f"http://{local_ip}:5000"
+
+    print(f"\n🤖  Taran v{Taran.VERSION} is online!\n")
+    print("┌─────────────────────────────────────────────┐")
+    print("│  HOW TO ACCESS TARAN                        │")
+    print("│                                             │")
+    print("│  💻  On this computer:                      │")
+    print("│      http://localhost:5000                  │")
+    print("│                                             │")
+    print(f"│  📱  On Android / phone (same Wi-Fi):       │")
+    print(f"│      {mobile_url:<43}│")
+    print("│                                             │")
+    print("│  📷  Scan the QR code below on your phone:  │")
+    print("└─────────────────────────────────────────────┘\n")
+
+    qr_ascii = _make_qr_ascii(mobile_url)
+    if qr_ascii:
+        print(qr_ascii)
+
     print("   Press Ctrl+C to stop.")
     print("   ⚠️  For production use, run with a WSGI server (e.g. gunicorn app:app).\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
